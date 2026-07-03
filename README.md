@@ -1,14 +1,51 @@
-# raceflow-realtime-service
-Microservicio de tiempo real de RaceFlow. Recibe posiciones GPS por WebSocket, recalcula el ranking y lo difunde a todos los participantes de la sala.
+# RACEFLOW — Realtime Service
 
-**Stack:** Java 21 · Spring Boot · spring-websocket · Redis · RabbitMQ (productor)
+> [!IMPORTANT]
+> Este repositorio contiene el **Realtime Service** de RaceFlow.
 
-**Componentes clave:**
-- RoomWebSocketHandler — gestiona conexiones WebSocket por sala
-- PositionIngestor — valida posiciones GPS entrantes
-- RankingService — recalcula el ranking
-- RankingStrategy — interfaz (patrón Strategy, intercambiable por deporte)
-- RoomStateClient — operaciones atómicas en Redis
-- EventPublisher — publica eventos en RabbitMQ
+> Para informacion general consulta el [perfil de la organizacion](https://github.com/RaceFlowECI).
 
-**Escala:** ×2–M (cuello de botella del tiempo real)
+---
+
+## Tabla de contenido
+- [Descripcion general](#descripcion-general)
+- [Stack tecnologico](#stack-tecnologico)
+- [Arquitectura interna](#arquitectura-interna)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Configuracion local](#configuracion-local)
+- [Protocolo WebSocket](#protocolo-websocket)
+- [Pruebas y calidad](#pruebas-y-calidad)
+- [CI/CD](#cicd)
+
+---
+
+## Descripcion general
+
+---
+
+## Stack tecnologico
+
+---
+
+## Arquitectura interna
+
+---
+
+## Estructura del proyecto
+
+---
+
+## Configuracion local
+
+---
+
+## Protocolo WebSocket
+
+---
+
+## Pruebas y calidad
+
+---
+
+## CI/CD
+
