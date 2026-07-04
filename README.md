@@ -58,6 +58,17 @@
 
 ## Arquitectura interna
 
+El servicio aplica el patron **Strategy** para desacoplar el algoritmo de calculo de posicion segun el deporte:
+
+```
+SportStrategy (interface)
+├── RunningStrategy   → distancia GPS en metros
+├── CyclingStrategy   → distancia GPS + factor de altimetria
+└── SwimmingStrategy  → distancia en metros lineales en piscina
+```
+
+El `PositionCalculator` recibe la estrategia en tiempo de ejecucion segun el campo `sport` de la sala, sin necesidad de condiciones en el dominio principal.
+
 ---
 
 ## Estructura del proyecto
