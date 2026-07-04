@@ -167,8 +167,18 @@ ws://localhost:8083/ws/rooms/{roomCode}?token={jwt}
 ---
 
 ## Pruebas y calidad
+```bash
+mvn test
+mvn clean test jacoco:report
+```
 
 ---
 
 ## CI/CD
 
+| Campo | Valor |
+|---|---|
+| Puerto | 8083 |
+| Protocolo | WebSocket |
+| Plataforma | _por definir_ |
+| Ultima version | ![CI](https://github.com/RaceFlowECI/raceflow-realtime-service/actions/workflows/ci.yml/badge.svg) |
