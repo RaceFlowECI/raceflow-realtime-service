@@ -73,6 +73,31 @@ El `PositionCalculator` recibe la estrategia en tiempo de ejecucion segun el cam
 
 ## Estructura del proyecto
 
+```text
+raceflow-realtime-service/
+├── .github/workflows/
+├── .env.example
+├── .gitignore
+├── Dockerfile
+├── pom.xml
+└── src/main/java/edu/eci/arsw/raceflow/realtime/
+    ├── RealtimeApplication.java
+    ├── config/
+    │   ├── WebSocketConfig.java
+    │   └── RedisConfig.java
+    ├── handler/
+    │   └── RaceWebSocketHandler.java
+    ├── strategy/
+    │   ├── SportStrategy.java
+    │   ├── RunningStrategy.java
+    │   ├── CyclingStrategy.java
+    │   └── SwimmingStrategy.java
+    ├── calculator/
+    │   └── PositionCalculator.java
+    └── listener/
+        └── RoomEventListener.java
+```
+
 ---
 
 ## Configuracion local
