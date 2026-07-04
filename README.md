@@ -133,6 +133,37 @@ mvn spring-boot:run
 
 ## Protocolo WebSocket
 
+### Conexion
+```
+ws://localhost:8083/ws/rooms/{roomCode}?token={jwt}
+```
+
+### Mensajes del cliente → servidor
+
+| Tipo | Descripcion |
+|---|---|
+| `LOCATION` | Envia coordenadas GPS del participante. |
+| `PING` | Keepalive de la conexion. |
+
+### Mensajes del servidor → cliente
+
+| Tipo | Descripcion |
+|---|---|
+| `RANKING` | Lista ordenada de participantes con su posicion actual. |
+| `ROOM_STATE` | Cambio de estado de la sala (WAITING, ACTIVE, FINISHED). |
+
+### Ejemplo de mensaje LOCATION
+```json
+{
+  "type": "LOCATION",
+  "payload": {
+    "lat": 4.7110,
+    "lng": -74.0721,
+    "timestamp": 1720224000000
+  }
+}
+```
+
 ---
 
 ## Pruebas y calidad
