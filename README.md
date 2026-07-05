@@ -16,6 +16,7 @@
 - [Protocolo WebSocket](#protocolo-websocket)
 - [Pruebas y calidad](#pruebas-y-calidad)
 - [CI/CD](#cicd)
+- [Observabilidad](#observabilidad)
 
 ---
 
@@ -182,3 +183,37 @@ mvn clean test jacoco:report
 | Protocolo | WebSocket |
 | Plataforma | _por definir_ |
 | Ultima version | ![CI](https://github.com/RaceFlowECI/raceflow-realtime-service/actions/workflows/ci.yml/badge.svg) |
+
+---
+
+## Observabilidad
+
+### Endpoint de métricas
+```
+GET http://localhost:8083/actuator/prometheus
+```
+También disponibles: `/actuator/health`, `/actuator/info`, `/actuator/metrics`.
+
+### Métricas de negocio
+
+| Métrica | Tipo | Descripcion |
+|---|---|---|
+| `raceflow_websocket_connections_active` | Gauge | Conexiones WebSocket activas |
+| `raceflow_positions_received_total` | Counter | Posiciones GPS recibidas |
+| `raceflow_positions_rejected_total{reason}` | Counter | Posiciones rechazadas (reason: invalid_jump / out_of_bounds / malformed) |
+| `raceflow_ranking_updates_total` | Counter | Actualizaciones de ranking computadas |
+| `raceflow_ranking_update_duration_seconds` | Timer | **SLO p99 ≤ 1s** — latencia de actualización de ranking |
+| `raceflow_reactions_sent_total` | Counter | Reacciones enviadas a clientes |
+| `raceflow_redis_write_duration_seconds` | Timer | Latencia de escritura en Redis |
+
+> [!IMPORTANT]
+> `raceflow_ranking_update_duration_seconds` registra percentiles p50, p95 y p99. Con múltiples réplicas, `raceflow_websocket_connections_active` debe consultarse con `sum()` para no contar doble.
+
+### Verificación local
+```bash
+# Con el servicio corriendo:
+curl -s http://localhost:8083/actuator/prometheus | grep raceflow_
+```
+
+> [!NOTE]
+> Micrometer convierte puntos a guiones bajos: `raceflow.rooms.created` → `raceflow_rooms_created_total` en Prometheus.
