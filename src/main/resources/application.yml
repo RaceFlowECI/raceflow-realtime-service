@@ -4,8 +4,6 @@ server:
 spring:
   application:
     name: raceflow-realtime-service
-
-spring:
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -14,3 +12,25 @@ spring:
     host: ${RABBITMQ_HOST:localhost}
     port: 5672
 
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: local
+
+# OpenTelemetry — config fallback para ejecucion local sin Docker
+# El agente lee estas propiedades si las env vars OTEL_* no estan definidas
+otel:
+  service:
+    name: ${OTEL_SERVICE_NAME:raceflow-realtime-service}
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}

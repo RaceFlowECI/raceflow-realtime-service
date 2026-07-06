@@ -16,6 +16,9 @@
 - [Protocolo WebSocket](#protocolo-websocket)
 - [Pruebas y calidad](#pruebas-y-calidad)
 - [CI/CD](#cicd)
+- [Observabilidad](#observabilidad)
+- [Logs estructurados](#logs-estructurados)
+- [Trazas distribuidas (OpenTelemetry)](#trazas-distribuidas-opentelemetry)
 
 ---
 
@@ -182,3 +185,112 @@ mvn clean test jacoco:report
 | Protocolo | WebSocket |
 | Plataforma | _por definir_ |
 | Ultima version | ![CI](https://github.com/RaceFlowECI/raceflow-realtime-service/actions/workflows/ci.yml/badge.svg) |
+
+---
+
+## Observabilidad
+
+### Endpoint de métricas
+```
+GET http://localhost:8083/actuator/prometheus
+```
+También disponibles: `/actuator/health`, `/actuator/info`, `/actuator/metrics`.
+
+### Métricas de negocio
+
+| Métrica | Tipo | Descripcion |
+|---|---|---|
+| `raceflow_websocket_connections_active` | Gauge | Conexiones WebSocket activas |
+| `raceflow_positions_received_total` | Counter | Posiciones GPS recibidas |
+| `raceflow_positions_rejected_total{reason}` | Counter | Posiciones rechazadas (reason: invalid_jump / out_of_bounds / malformed) |
+| `raceflow_ranking_updates_total` | Counter | Actualizaciones de ranking computadas |
+| `raceflow_ranking_update_duration_seconds` | Timer | **SLO p99 ≤ 1s** — latencia de actualización de ranking |
+| `raceflow_reactions_sent_total` | Counter | Reacciones enviadas a clientes |
+| `raceflow_redis_write_duration_seconds` | Timer | Latencia de escritura en Redis |
+
+> [!IMPORTANT]
+> `raceflow_ranking_update_duration_seconds` registra percentiles p50, p95 y p99. Con múltiples réplicas, `raceflow_websocket_connections_active` debe consultarse con `sum()` para no contar doble.
+
+### Verificación local
+```bash
+# Con el servicio corriendo:
+curl -s http://localhost:8083/actuator/prometheus | grep raceflow_
+```
+
+> [!NOTE]
+> Micrometer convierte puntos a guiones bajos: `raceflow.rooms.created` → `raceflow_rooms_created_total` en Prometheus.
+
+---
+
+## Logs estructurados
+
+Los logs se emiten en formato **JSON (Logstash)** tanto a consola como a archivo, lo que permite ingestión directa por Promtail → Loki.
+
+### Archivos generados
+```
+logs/<nombre-servicio>.log               ← archivo activo
+logs/<nombre-servicio>.2026-07-05.log    ← rotado por fecha (retención 7 días)
+```
+
+### Estructura de un log entry
+```json
+{
+  "@timestamp": "2026-07-05T10:00:00.000-05:00",
+  "@version":   "1",
+  "message":    "User registered successfully",
+  "logger_name":"edu.eci.arsw.raceflow.auth.service.AuthService",
+  "thread_name":"http-nio-8081-exec-1",
+  "level":      "INFO",
+  "level_value": 20000
+}
+```
+
+### Consulta en Loki (LogQL)
+```logql
+{service="raceflow-auth-service"} | json | level="ERROR"
+```
+
+---
+
+## Trazas distribuidas (OpenTelemetry)
+
+Este servicio forma parte del **flujo critico de tiempo real** y tiene el OpenTelemetry Java Agent adjunto al contenedor Docker (sin cambios en el codigo fuente).
+
+### Como funciona
+
+```
+[ raceflow-realtime-service ]
+  └─ opentelemetry-javaagent.jar (adjunto via -javaagent)
+       └─ OTLP gRPC ──► Tempo :4317
+                              └─ Grafana (Explore → Tempo)
+```
+
+### Variables de entorno requeridas
+
+| Variable | Valor local | Valor Docker |
+|---|---|---|
+| `OTEL_SERVICE_NAME` | `raceflow-realtime-service` | `raceflow-realtime-service` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | `http://tempo:4317` |
+| `OTEL_TRACES_EXPORTER` | `otlp` | `otlp` |
+| `OTEL_METRICS_EXPORTER` | `none` | `none` |
+| `OTEL_LOGS_EXPORTER` | `none` | `none` |
+
+### Ejecucion local con agente
+
+```bash
+# Descargar el agente (una sola vez)
+curl -L -o opentelemetry-javaagent.jar \
+  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.3.0/opentelemetry-javaagent.jar
+
+# Ejecutar con tracing
+java -javaagent:opentelemetry-javaagent.jar \
+  -DOTEL_SERVICE_NAME=raceflow-realtime-service \
+  -DOTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 \
+  -DOTEL_TRACES_EXPORTER=otlp \
+  -DOTEL_METRICS_EXPORTER=none \
+  -DOTEL_LOGS_EXPORTER=none \
+  -jar target/*.jar
+```
+
+> [!NOTE]
+> Con `mvn spring-boot:run` el agente NO se activa. Usa el comando anterior o Docker para trazas reales.
