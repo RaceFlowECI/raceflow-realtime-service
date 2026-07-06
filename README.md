@@ -18,6 +18,7 @@
 - [CI/CD](#cicd)
 - [Observabilidad](#observabilidad)
 - [Logs estructurados](#logs-estructurados)
+- [Trazas distribuidas (OpenTelemetry)](#trazas-distribuidas-opentelemetry)
 
 ---
 
@@ -248,3 +249,48 @@ logs/<nombre-servicio>.2026-07-05.log    ← rotado por fecha (retención 7 día
 ```logql
 {service="raceflow-auth-service"} | json | level="ERROR"
 ```
+
+---
+
+## Trazas distribuidas (OpenTelemetry)
+
+Este servicio forma parte del **flujo critico de tiempo real** y tiene el OpenTelemetry Java Agent adjunto al contenedor Docker (sin cambios en el codigo fuente).
+
+### Como funciona
+
+```
+[ raceflow-realtime-service ]
+  └─ opentelemetry-javaagent.jar (adjunto via -javaagent)
+       └─ OTLP gRPC ──► Tempo :4317
+                              └─ Grafana (Explore → Tempo)
+```
+
+### Variables de entorno requeridas
+
+| Variable | Valor local | Valor Docker |
+|---|---|---|
+| `OTEL_SERVICE_NAME` | `raceflow-realtime-service` | `raceflow-realtime-service` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | `http://tempo:4317` |
+| `OTEL_TRACES_EXPORTER` | `otlp` | `otlp` |
+| `OTEL_METRICS_EXPORTER` | `none` | `none` |
+| `OTEL_LOGS_EXPORTER` | `none` | `none` |
+
+### Ejecucion local con agente
+
+```bash
+# Descargar el agente (una sola vez)
+curl -L -o opentelemetry-javaagent.jar \
+  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.3.0/opentelemetry-javaagent.jar
+
+# Ejecutar con tracing
+java -javaagent:opentelemetry-javaagent.jar \
+  -DOTEL_SERVICE_NAME=raceflow-realtime-service \
+  -DOTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 \
+  -DOTEL_TRACES_EXPORTER=otlp \
+  -DOTEL_METRICS_EXPORTER=none \
+  -DOTEL_LOGS_EXPORTER=none \
+  -jar target/*.jar
+```
+
+> [!NOTE]
+> Con `mvn spring-boot:run` el agente NO se activa. Usa el comando anterior o Docker para trazas reales.
