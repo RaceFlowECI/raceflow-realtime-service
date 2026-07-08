@@ -1,5 +1,7 @@
 # RACEFLOW — Realtime Service
 
+![Build](https://github.com/RaceFlowECI/raceflow-realtime-service/actions/workflows/build.yml/badge.svg)
+
 > [!IMPORTANT]
 > Este repositorio contiene el **Realtime Service** de RaceFlow: motor de tiempo real con WebSocket y Strategy pattern.
 
