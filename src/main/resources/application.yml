@@ -17,6 +17,11 @@ spring:
 jwt:
   secret: ${JWT_SECRET:raceflow-dev-secret-key-for-local-dev-only-32chars}
 
+auth:
+  grpc:
+    host: ${AUTH_GRPC_HOST:localhost}
+    port: ${AUTH_GRPC_PORT:9090}
+
 management:
   endpoints:
     web:

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "edu.eci.arsw.raceflow.auth.grpc";
+option java_outer_classname = "UserProfileProto";
+
+// Mirrors the contract published by auth-service (src/main/proto/user_profile.proto).
+// realtime-service only ever acts as a client against this service.
+service UserProfileService {
+  rpc GetProfile (ProfileRequest) returns (ProfileResponse);
+}
+
+message ProfileRequest {
+  string email = 1;
+}
+
+message ProfileResponse {
+  bool found = 1;
+  string email = 2;
+  string name = 3;
+  string sport = 4;
+}
