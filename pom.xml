@@ -16,6 +16,8 @@
     <properties>
         <java.version>21</java.version>
         <lombok.version>1.18.36</lombok.version>
+        <mockito.version>5.14.2</mockito.version>
+        <byte-buddy.version>1.15.10</byte-buddy.version>
     </properties>
     <dependencies>
         <dependency>
