@@ -7,17 +7,26 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST:localhost}
-      port: 6379
+      port: ${REDIS_PORT:6379}
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
-    port: 5672
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:raceflow}
+    password: ${RABBITMQ_PASS:raceflow2026}
 
+jwt:
+  secret: ${JWT_SECRET:raceflow-dev-secret-key-for-local-dev-only-32chars}
+
+auth:
+  grpc:
+    host: ${AUTH_GRPC_HOST:localhost}
+    port: ${AUTH_GRPC_PORT:9090}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics
+        include: health,prometheus,info,metrics
   endpoint:
     prometheus:
       enabled: true
