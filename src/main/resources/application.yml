@@ -11,8 +11,8 @@ spring:
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USER:raceflow}
-    password: ${RABBITMQ_PASS:raceflow2026}
+    username: ${RABBITMQ_USERNAME:raceflow}
+    password: ${RABBITMQ_PASSWORD:raceflow2026}
 
 jwt:
   secret: ${JWT_SECRET:raceflow-dev-secret-key-for-local-dev-only-32chars}
