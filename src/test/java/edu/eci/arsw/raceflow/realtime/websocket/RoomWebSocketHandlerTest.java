@@ -130,6 +130,102 @@ class RoomWebSocketHandlerTest {
     }
 
     @Test
+    void voiceJoinTracksParticipantAndBroadcastsPeerList() throws Exception {
+        WebSocketSession sender = sessionFor("juan@raceflow.dev");
+        WebSocketSession other = sessionFor("ana@raceflow.dev");
+        room.getSessions().put("juan@raceflow.dev", sender);
+        room.getSessions().put("ana@raceflow.dev", other);
+
+        handler.handleTextMessage(sender, new TextMessage("{\"type\":\"VOICE_JOIN\"}"));
+
+        assertThat(room.getVoiceParticipants()).containsExactly("juan@raceflow.dev");
+
+        ArgumentCaptor<TextMessage> captor = ArgumentCaptor.forClass(TextMessage.class);
+        verify(other).sendMessage(captor.capture());
+        JsonNode payload = objectMapper.readTree(captor.getValue().getPayload());
+        assertThat(payload.get("type").asText()).isEqualTo("VOICE_PEER_JOINED");
+        assertThat(payload.get("from").asText()).isEqualTo("juan@raceflow.dev");
+        assertThat(payload.get("peers")).hasSize(1);
+    }
+
+    @Test
+    void voiceLeaveRemovesParticipantAndBroadcasts() throws Exception {
+        WebSocketSession sender = sessionFor("juan@raceflow.dev");
+        WebSocketSession other = sessionFor("ana@raceflow.dev");
+        room.getSessions().put("juan@raceflow.dev", sender);
+        room.getSessions().put("ana@raceflow.dev", other);
+        room.getVoiceParticipants().add("juan@raceflow.dev");
+
+        handler.handleTextMessage(sender, new TextMessage("{\"type\":\"VOICE_LEAVE\"}"));
+
+        assertThat(room.getVoiceParticipants()).isEmpty();
+
+        ArgumentCaptor<TextMessage> captor = ArgumentCaptor.forClass(TextMessage.class);
+        verify(other).sendMessage(captor.capture());
+        assertThat(objectMapper.readTree(captor.getValue().getPayload()).get("type").asText())
+                .isEqualTo("VOICE_PEER_LEFT");
+    }
+
+    @Test
+    void voiceLeaveForNonParticipantBroadcastsNothing() throws Exception {
+        WebSocketSession sender = sessionFor("juan@raceflow.dev");
+        WebSocketSession other = sessionFor("ana@raceflow.dev");
+        room.getSessions().put("juan@raceflow.dev", sender);
+        room.getSessions().put("ana@raceflow.dev", other);
+
+        handler.handleTextMessage(sender, new TextMessage("{\"type\":\"VOICE_LEAVE\"}"));
+
+        verify(other, never()).sendMessage(any());
+    }
+
+    @Test
+    void voiceOfferIsRelayedOnlyToTargetWithAuthenticatedSender() throws Exception {
+        WebSocketSession sender = sessionFor("juan@raceflow.dev");
+        WebSocketSession target = sessionFor("ana@raceflow.dev");
+        WebSocketSession bystander = sessionFor("leo@raceflow.dev");
+        room.getSessions().put("juan@raceflow.dev", sender);
+        room.getSessions().put("ana@raceflow.dev", target);
+        room.getSessions().put("leo@raceflow.dev", bystander);
+
+        // "from" spoofed by the client — the handler must overwrite it
+        handler.handleTextMessage(sender, new TextMessage(
+                "{\"type\":\"VOICE_OFFER\",\"to\":\"ana@raceflow.dev\",\"from\":\"fake@x.com\",\"sdp\":\"v=0...\"}"));
+
+        ArgumentCaptor<TextMessage> captor = ArgumentCaptor.forClass(TextMessage.class);
+        verify(target).sendMessage(captor.capture());
+        JsonNode payload = objectMapper.readTree(captor.getValue().getPayload());
+        assertThat(payload.get("type").asText()).isEqualTo("VOICE_OFFER");
+        assertThat(payload.get("from").asText()).isEqualTo("juan@raceflow.dev");
+        assertThat(payload.get("sdp").asText()).isEqualTo("v=0...");
+
+        verify(bystander, never()).sendMessage(any());
+        verify(sender, never()).sendMessage(any());
+    }
+
+    @Test
+    void voiceSignalToDisconnectedTargetIsDropped() throws Exception {
+        WebSocketSession sender = sessionFor("juan@raceflow.dev");
+        room.getSessions().put("juan@raceflow.dev", sender);
+
+        handler.handleTextMessage(sender, new TextMessage(
+                "{\"type\":\"VOICE_ICE\",\"to\":\"nadie@x.com\",\"candidate\":\"c\"}"));
+
+        verify(sender, never()).sendMessage(any());
+    }
+
+    @Test
+    void connectionCloseAlsoLeavesVoiceCall() throws Exception {
+        WebSocketSession session = sessionFor("juan@raceflow.dev");
+        WebSocketSession other = sessionFor("ana@raceflow.dev");
+        room.getSessions().put("ana@raceflow.dev", other);
+        room.getVoiceParticipants().add("juan@raceflow.dev");
+
+        handler.afterConnectionClosed(session, CloseStatus.NORMAL);
+
+        assertThat(room.getVoiceParticipants()).isEmpty();
+    }
+
+    @Test
     void afterConnectionClosedUnregistersSessionAndBroadcasts() throws Exception {
         WebSocketSession session = sessionFor("juan@raceflow.dev");
 

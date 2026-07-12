@@ -69,6 +69,12 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
             handlePosition(roomCode, email, message.getPayload());
         } else if ("REACTION".equals(type)) {
             handleReaction(roomCode, email, message.getPayload());
+        } else if ("VOICE_JOIN".equals(type)) {
+            handleVoiceJoin(roomCode, email);
+        } else if ("VOICE_LEAVE".equals(type)) {
+            handleVoiceLeave(roomCode, email);
+        } else if ("VOICE_OFFER".equals(type) || "VOICE_ANSWER".equals(type) || "VOICE_ICE".equals(type)) {
+            relayVoiceSignal(roomCode, email, node);
         }
     }
 
@@ -123,11 +129,56 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         String email = emailOf(session);
         String roomCode = roomCodeOf(session);
 
+        handleVoiceLeave(roomCode, email);
         roomManager.unregisterSession(roomCode, email);
         metrics.connectionClosed();
         log.info("WS disconnected — room={} email={} status={}", roomCode, email, status);
 
         broadcastRoomState(roomCode);
+    }
+
+    /**
+     * WebRTC signaling: the server never touches audio — it only relays session
+     * negotiation between peers (offers/answers/ICE candidates) and tracks who is
+     * in the voice call so newcomers know which peers to connect to.
+     */
+    private void handleVoiceJoin(String roomCode, String email) throws Exception {
+        RoomState room = roomManager.getRoom(roomCode);
+        room.getVoiceParticipants().add(email);
+
+        Map<String, Object> joined = new LinkedHashMap<>();
+        joined.put("type", "VOICE_PEER_JOINED");
+        joined.put("from", email);
+        joined.put("peers", room.getVoiceParticipants());
+        broadcast(room, objectMapper.writeValueAsString(joined));
+    }
+
+    private void handleVoiceLeave(String roomCode, String email) throws Exception {
+        RoomState room = roomManager.getRoom(roomCode);
+        if (!room.getVoiceParticipants().remove(email)) {
+            return;
+        }
+
+        Map<String, Object> left = new LinkedHashMap<>();
+        left.put("type", "VOICE_PEER_LEFT");
+        left.put("from", email);
+        left.put("peers", room.getVoiceParticipants());
+        broadcast(room, objectMapper.writeValueAsString(left));
+    }
+
+    private void relayVoiceSignal(String roomCode, String senderEmail, JsonNode node) throws Exception {
+        String target = node.has("to") ? node.get("to").asText() : "";
+        RoomState room = roomManager.getRoom(roomCode);
+        WebSocketSession targetSession = room.getSessions().get(target);
+        if (targetSession == null || !targetSession.isOpen()) {
+            log.warn("Voice signal dropped — room={} from={} to={} (target not connected)",
+                    roomCode, senderEmail, target);
+            return;
+        }
+
+        // Re-stamp "from" with the authenticated sender so a peer can't impersonate another
+        ((com.fasterxml.jackson.databind.node.ObjectNode) node).put("from", senderEmail);
+        targetSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(node)));
     }
 
     private void broadcastRoomState(String roomCode) throws Exception {
