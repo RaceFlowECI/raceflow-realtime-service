@@ -11,6 +11,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Authenticates WebSocket connections at handshake time by validating a JWT
+ * passed as a {@code ?token=} query parameter -- this is why WS auth does not
+ * go through the main Spring Security filter chain (see {@code SecurityConfig}).
+ * The resolved email is stashed in the session attributes for the handler to use.
+ */
 @Component
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
@@ -20,6 +26,13 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Rejects the handshake with 401 if the {@code token} query parameter is
+     * missing or invalid; otherwise stores the token's email under the
+     * {@code "email"} session attribute.
+     *
+     * @return true to allow the handshake to proceed, false to reject it
+     */
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                     WebSocketHandler wsHandler, Map<String, Object> attributes) {
@@ -39,6 +52,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
         return true;
     }
 
+    /** No-op: nothing to do after a successful or failed handshake. */
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                 WebSocketHandler wsHandler, Exception exception) {

@@ -9,14 +9,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/** Translates domain exceptions into consistent JSON error responses across the API. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /** @return 404 Not Found for an operation on a nonexistent room */
     @ExceptionHandler(RoomNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleRoomNotFound(RoomNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorBody(ex.getMessage(), 404));
     }
 
+    /** @return 400 Bad Request for a malformed JSON payload */
     @ExceptionHandler(JsonProcessingException.class)
     public ResponseEntity<Map<String, Object>> handleJsonProcessing(JsonProcessingException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody("Malformed JSON payload", 400));

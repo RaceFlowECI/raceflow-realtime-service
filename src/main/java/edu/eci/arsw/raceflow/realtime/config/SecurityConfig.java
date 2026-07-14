@@ -12,10 +12,22 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Spring Security configuration: stateless, CORS for the allowed frontend
+ * origins, and public routes for REST, WebSocket, invitations, health, and
+ * the incident-simulation endpoint (JWT validation for WS happens at the
+ * handshake via {@link edu.eci.arsw.raceflow.realtime.websocket.WebSocketAuthInterceptor},
+ * not through this filter chain).
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * @param http the security builder provided by Spring
+     * @return the configured filter chain
+     * @throws Exception if the security configuration cannot be built
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -34,6 +46,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * @return the CORS configuration source allowlisting local dev and the
+     *         production frontend on Azure Static Web Apps
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

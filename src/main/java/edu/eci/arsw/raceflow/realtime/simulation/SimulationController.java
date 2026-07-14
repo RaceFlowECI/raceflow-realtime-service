@@ -39,10 +39,20 @@ public class SimulationController {
         return t;
     });
 
+    /** @param metrics used to record the artificial ranking-update delays this endpoint injects */
     public SimulationController(RealtimeMetrics metrics) {
         this.metrics = metrics;
     }
 
+    /**
+     * Starts recording {@code count} ranking-update observations with an artificial
+     * {@code delayMs} delay each, to deliberately breach the p99 &lt;= 1s SLO for
+     * observability-lab purposes.
+     *
+     * @param delayMs artificial delay per observation, in milliseconds
+     * @param count   number of observations to record
+     * @return 400 if a simulation is already running, otherwise 202 with the run's parameters
+     */
     @PostMapping("/slow-ranking")
     public ResponseEntity<Map<String, Object>> startSlowRanking(
             @RequestParam(defaultValue = "1500") int delayMs,
@@ -90,6 +100,7 @@ public class SimulationController {
         ));
     }
 
+    /** Cancels any in-progress simulation. Safe to call even if none is running. */
     @PostMapping("/stop")
     public ResponseEntity<Map<String, String>> stop() {
         boolean wasRunning = running.getAndSet(false);
@@ -98,6 +109,7 @@ public class SimulationController {
         return ResponseEntity.ok(Map.of("status", "stopped", "message", msg));
     }
 
+    /** @return whether a simulation is running, plus the PromQL query used to watch the SLO in Grafana */
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> status() {
         return ResponseEntity.ok(Map.of(

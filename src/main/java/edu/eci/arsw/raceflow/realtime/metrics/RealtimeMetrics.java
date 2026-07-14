@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.*;
 import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Micrometer counters/timers/gauges for realtime-service, exposed at {@code /actuator/prometheus}. */
 @Component
 public class RealtimeMetrics {
 
@@ -14,6 +15,9 @@ public class RealtimeMetrics {
     private final Timer redisWriteDuration;
     private final AtomicInteger activeConnections = new AtomicInteger(0);
 
+    /**
+     * @param registry the Micrometer registry to bind these meters to
+     */
     public RealtimeMetrics(MeterRegistry registry) {
         this.positionsReceived = Counter.builder("raceflow.positions.received")
                 .description("Total GPS positions received")
@@ -47,14 +51,27 @@ public class RealtimeMetrics {
         Counter.builder("raceflow.positions.rejected").tag("reason", "malformed").register(registry);
     }
 
+    /** Increments the total received-positions counter. */
     public void recordPositionReceived() { positionsReceived.increment(); }
+    /**
+     * Increments the rejected-positions counter, tagged by reason.
+     *
+     * @param reason   one of {@code invalid_jump}, {@code out_of_bounds}, {@code malformed}
+     * @param registry the registry to resolve the tagged counter from
+     */
     public void recordPositionRejected(String reason, MeterRegistry registry) {
         registry.counter("raceflow.positions.rejected", "reason", reason).increment();
     }
+    /** Increments the total ranking-updates counter. */
     public void recordRankingUpdate() { rankingUpdates.increment(); }
+    /** Increments the total reactions-sent counter. */
     public void recordReactionSent() { reactionsSent.increment(); }
+    /** @return the timer used to measure ranking recomputation latency (SLO p99 &lt;= 1s) */
     public Timer getRankingUpdateDuration() { return rankingUpdateDuration; }
+    /** @return the timer used to measure Redis write latency */
     public Timer getRedisWriteDuration() { return redisWriteDuration; }
+    /** Increments the active-WebSocket-connections gauge. */
     public void connectionOpened() { activeConnections.incrementAndGet(); }
+    /** Decrements the active-WebSocket-connections gauge. */
     public void connectionClosed() { activeConnections.decrementAndGet(); }
 }
