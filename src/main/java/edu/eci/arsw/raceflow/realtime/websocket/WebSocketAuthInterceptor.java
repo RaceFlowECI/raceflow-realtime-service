@@ -31,7 +31,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
      * missing or invalid; otherwise stores the token's email under the
      * {@code "email"} session attribute.
      *
-     * @return true to allow the handshake to proceed, false to reject it
+     * @return true para permitir que el handshake continúe, false para rechazarlo
      */
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
@@ -52,7 +52,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
         return true;
     }
 
-    /** No-op: nothing to do after a successful or failed handshake. */
+    /** No-op: no hay nada que hacer después de un handshake exitoso o fallido. */
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                 WebSocketHandler wsHandler, Exception exception) {

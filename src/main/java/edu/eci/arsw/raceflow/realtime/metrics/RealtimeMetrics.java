@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.*;
 import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** Micrometer counters/timers/gauges for realtime-service, exposed at {@code /actuator/prometheus}. */
+/** Contadores/temporizadores/gauges de Micrometer para realtime-service, expuestos en {@code /actuator/prometheus}. */
 @Component
 public class RealtimeMetrics {
 
@@ -16,7 +16,7 @@ public class RealtimeMetrics {
     private final AtomicInteger activeConnections = new AtomicInteger(0);
 
     /**
-     * @param registry the Micrometer registry to bind these meters to
+     * @param registry el registro de Micrometer al cual asociar estas métricas
      */
     public RealtimeMetrics(MeterRegistry registry) {
         this.positionsReceived = Counter.builder("raceflow.positions.received")
@@ -51,27 +51,27 @@ public class RealtimeMetrics {
         Counter.builder("raceflow.positions.rejected").tag("reason", "malformed").register(registry);
     }
 
-    /** Increments the total received-positions counter. */
+    /** Incrementa el contador total de posiciones recibidas. */
     public void recordPositionReceived() { positionsReceived.increment(); }
     /**
-     * Increments the rejected-positions counter, tagged by reason.
+     * Incrementa el contador de posiciones rechazadas, etiquetado por motivo.
      *
-     * @param reason   one of {@code invalid_jump}, {@code out_of_bounds}, {@code malformed}
-     * @param registry the registry to resolve the tagged counter from
+     * @param reason   uno de {@code invalid_jump}, {@code out_of_bounds}, {@code malformed}
+     * @param registry el registro del cual resolver el contador etiquetado
      */
     public void recordPositionRejected(String reason, MeterRegistry registry) {
         registry.counter("raceflow.positions.rejected", "reason", reason).increment();
     }
-    /** Increments the total ranking-updates counter. */
+    /** Incrementa el contador total de actualizaciones de ranking. */
     public void recordRankingUpdate() { rankingUpdates.increment(); }
-    /** Increments the total reactions-sent counter. */
+    /** Incrementa el contador total de reacciones enviadas. */
     public void recordReactionSent() { reactionsSent.increment(); }
-    /** @return the timer used to measure ranking recomputation latency (SLO p99 &lt;= 1s) */
+    /** @return el temporizador usado para medir la latencia de recálculo del ranking (SLO p99 &lt;= 1s) */
     public Timer getRankingUpdateDuration() { return rankingUpdateDuration; }
-    /** @return the timer used to measure Redis write latency */
+    /** @return el temporizador usado para medir la latencia de escritura en Redis */
     public Timer getRedisWriteDuration() { return redisWriteDuration; }
-    /** Increments the active-WebSocket-connections gauge. */
+    /** Incrementa el gauge de conexiones WebSocket activas. */
     public void connectionOpened() { activeConnections.incrementAndGet(); }
-    /** Decrements the active-WebSocket-connections gauge. */
+    /** Decrementa el gauge de conexiones WebSocket activas. */
     public void connectionClosed() { activeConnections.decrementAndGet(); }
 }

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** One row of a room's computed ranking, as broadcast to clients. */
+/** Una fila del ranking calculado de una sala, tal como se transmite a los clientes. */
 @Data
 @Builder
 @NoArgsConstructor

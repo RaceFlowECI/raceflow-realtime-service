@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/** A pending invitation to join a room, kept in memory for as long as the room exists. */
+/** Una invitación pendiente para unirse a una sala, mantenida en memoria mientras la sala exista. */
 @Data
 @Builder
 @NoArgsConstructor

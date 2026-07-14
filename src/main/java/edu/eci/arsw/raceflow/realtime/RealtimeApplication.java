@@ -14,7 +14,7 @@ public class RealtimeApplication {
     /**
      * Boots the Spring application context.
      *
-     * @param args command-line arguments passed to Spring Boot
+     * @param args argumentos de línea de comandos pasados a Spring Boot
      */
     public static void main(String[] args) {
         SpringApplication.run(RealtimeApplication.class, args);

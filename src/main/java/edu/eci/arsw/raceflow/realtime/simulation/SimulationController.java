@@ -39,7 +39,7 @@ public class SimulationController {
         return t;
     });
 
-    /** @param metrics used to record the artificial ranking-update delays this endpoint injects */
+    /** @param metrics usado para registrar los retrasos artificiales de actualización de ranking que inyecta este endpoint */
     public SimulationController(RealtimeMetrics metrics) {
         this.metrics = metrics;
     }
@@ -49,9 +49,9 @@ public class SimulationController {
      * {@code delayMs} delay each, to deliberately breach the p99 &lt;= 1s SLO for
      * observability-lab purposes.
      *
-     * @param delayMs artificial delay per observation, in milliseconds
-     * @param count   number of observations to record
-     * @return 400 if a simulation is already running, otherwise 202 with the run's parameters
+     * @param delayMs retraso artificial por observación, en milisegundos
+     * @param count   número de observaciones a registrar
+     * @return 400 si ya hay una simulación en curso, de lo contrario 202 con los parámetros de la ejecución
      */
     @PostMapping("/slow-ranking")
     public ResponseEntity<Map<String, Object>> startSlowRanking(
@@ -100,7 +100,7 @@ public class SimulationController {
         ));
     }
 
-    /** Cancels any in-progress simulation. Safe to call even if none is running. */
+    /** Cancela cualquier simulación en curso. Es seguro llamarlo incluso si no hay ninguna en ejecución. */
     @PostMapping("/stop")
     public ResponseEntity<Map<String, String>> stop() {
         boolean wasRunning = running.getAndSet(false);
@@ -109,7 +109,7 @@ public class SimulationController {
         return ResponseEntity.ok(Map.of("status", "stopped", "message", msg));
     }
 
-    /** @return whether a simulation is running, plus the PromQL query used to watch the SLO in Grafana */
+    /** @return si hay una simulación en curso, más la consulta PromQL usada para vigilar el SLO en Grafana */
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> status() {
         return ResponseEntity.ok(Map.of(

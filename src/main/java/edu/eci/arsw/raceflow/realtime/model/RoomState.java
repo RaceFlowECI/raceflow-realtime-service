@@ -23,8 +23,8 @@ public class RoomState {
     private final LocalDateTime createdAt = LocalDateTime.now();
 
     /**
-     * @param roomCode  the room's unique 6-character code
-     * @param createdBy the email of the athlete who created the room
+     * @param roomCode  el código único de 6 caracteres de la sala
+     * @param createdBy el email del atleta que creó la sala
      */
     public RoomState(String roomCode, String createdBy) {
         this.roomCode = roomCode;

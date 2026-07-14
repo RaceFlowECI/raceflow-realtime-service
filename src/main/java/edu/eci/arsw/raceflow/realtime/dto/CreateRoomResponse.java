@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Response returned after successfully creating a room. */
+/** Respuesta devuelta tras crear una sala exitosamente. */
 @Data
 @Builder
 @NoArgsConstructor

@@ -27,11 +27,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Core WebSocket handler for a room's live session. One socket per athlete;
- * handles GPS position updates, reactions, room-state broadcasts, and the
- * WebRTC voice-chat signaling (join/leave/offer/answer/ICE relay). The room
- * code is extracted from the connection's URL path, and the athlete's email
- * comes from the session attribute set by {@link WebSocketAuthInterceptor}.
+ * Manejador central de WebSocket para la sesión en vivo de una sala. Un socket por atleta;
+ * maneja actualizaciones de posición GPS, reacciones, transmisiones del estado de la sala, y
+ * la señalización del chat de voz WebRTC (unirse/salir/oferta/respuesta/relevo ICE). El código
+ * de la sala se extrae de la ruta URL de la conexión, y el email del atleta viene del
+ * atributo de sesión establecido por {@link WebSocketAuthInterceptor}.
  */
 @Component
 public class RoomWebSocketHandler extends TextWebSocketHandler {
@@ -52,7 +52,7 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         this.objectMapper = objectMapper;
     }
 
-    /** Registers the new session with its room, marks the athlete connected, and broadcasts the updated room state. */
+    /** Registra la nueva sesión con su sala, marca al atleta como conectado, y transmite el estado actualizado de la sala. */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String email = emailOf(session);
@@ -65,7 +65,7 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         broadcastRoomState(roomCode);
     }
 
-    /** Dispatches an incoming message by its {@code type} field: POSITION, REACTION, or a VOICE_* signaling message. */
+    /** Despacha un mensaje entrante según su campo {@code type}: POSITION, REACTION, o un mensaje de señalización VOICE_*. */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String email = emailOf(session);
@@ -88,9 +88,9 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * Validates and applies a GPS position update: rejects out-of-range coordinates,
-     * accumulates distance via the haversine formula against the athlete's previous
-     * position, recomputes the room's ranking, and broadcasts the new state.
+     * Valida y aplica una actualización de posición GPS: rechaza coordenadas fuera de rango,
+     * acumula distancia mediante la fórmula de haversine contra la posición anterior del atleta,
+     * recalcula el ranking de la sala, y transmite el nuevo estado.
      */
     private void handlePosition(String roomCode, String email, String payload) throws Exception {
         PositionMessage pos = objectMapper.readValue(payload, PositionMessage.class);
@@ -132,14 +132,14 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         broadcastRoomState(roomCode, ranking);
     }
 
-    /** Parses and broadcasts an emoji reaction from one athlete to the whole room. */
+    /** Parsea y transmite una reacción con emoji de un atleta a toda la sala. */
     private void handleReaction(String roomCode, String email, String payload) throws Exception {
         ReactionMessage reaction = objectMapper.readValue(payload, ReactionMessage.class);
         metrics.recordReactionSent();
         broadcastReaction(roomCode, email, reaction.getEmoji());
     }
 
-    /** Cleans up on disconnect: leaves the voice call, unregisters the session, and broadcasts the updated room state. */
+    /** Limpia al desconectarse: sale de la llamada de voz, desregistra la sesión, y transmite el estado actualizado de la sala. */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         String email = emailOf(session);
@@ -154,9 +154,9 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * WebRTC signaling: the server never touches audio — it only relays session
-     * negotiation between peers (offers/answers/ICE candidates) and tracks who is
-     * in the voice call so newcomers know which peers to connect to.
+     * Señalización WebRTC: el servidor nunca toca el audio -- solo transmite la negociación
+     * de sesión entre pares (ofertas/respuestas/candidatos ICE) y lleva registro de quién está
+     * en la llamada de voz para que los recién llegados sepan a qué pares conectarse.
      */
     private void handleVoiceJoin(String roomCode, String email) throws Exception {
         RoomState room = roomManager.getRoom(roomCode);
@@ -169,7 +169,7 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         broadcast(room, objectMapper.writeValueAsString(joined));
     }
 
-    /** Removes the athlete from the voice call and notifies remaining participants; no-op if they weren't in it. */
+    /** Elimina al atleta de la llamada de voz y notifica a los participantes restantes; no hace nada si no estaba en ella. */
     private void handleVoiceLeave(String roomCode, String email) throws Exception {
         RoomState room = roomManager.getRoom(roomCode);
         if (!room.getVoiceParticipants().remove(email)) {
@@ -183,7 +183,7 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         broadcast(room, objectMapper.writeValueAsString(left));
     }
 
-    /** Relays a WebRTC offer/answer/ICE candidate to its target peer, stamping the authenticated sender to prevent impersonation. */
+    /** Transmite una oferta/respuesta/candidato ICE de WebRTC a su par destino, estampando el remitente autenticado para evitar suplantación. */
     private void relayVoiceSignal(String roomCode, String senderEmail, JsonNode node) throws Exception {
         String target = node.has("to") ? node.get("to").asText() : "";
         RoomState room = roomManager.getRoom(roomCode);
@@ -199,14 +199,14 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         targetSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(node)));
     }
 
-    /** Recomputes the room's ranking and broadcasts the resulting room state. */
+    /** Recalcula el ranking de la sala y transmite el estado de sala resultante. */
     private void broadcastRoomState(String roomCode) throws Exception {
         RoomState room = roomManager.getRoom(roomCode);
         List<RankingEntry> ranking = rankingService.computeAndStore(room);
         broadcastRoomState(roomCode, ranking);
     }
 
-    /** Broadcasts a pre-computed ranking as a ROOM_STATE message, avoiding a redundant recomputation. */
+    /** Transmite un ranking ya calculado como un mensaje ROOM_STATE, evitando un recálculo redundante. */
     private void broadcastRoomState(String roomCode, List<RankingEntry> ranking) throws Exception {
         RoomState room = roomManager.getRoom(roomCode);
         RoomStateMessage msg = RoomStateMessage.builder()
@@ -220,7 +220,7 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         broadcast(room, json);
     }
 
-    /** Broadcasts a REACTION message to every open session in the room. */
+    /** Transmite un mensaje REACTION a cada sesión abierta en la sala. */
     private void broadcastReaction(String roomCode, String senderEmail, String emoji) throws Exception {
         RoomState room = roomManager.getRoom(roomCode);
         Map<String, String> msg = new LinkedHashMap<>();
@@ -232,7 +232,7 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         broadcast(room, json);
     }
 
-    /** Sends a raw JSON payload to every currently-open session in the room. */
+    /** Envía un payload JSON crudo a cada sesión actualmente abierta en la sala. */
     private void broadcast(RoomState room, String json) throws Exception {
         for (WebSocketSession s : room.getSessions().values()) {
             if (s.isOpen()) {
@@ -241,14 +241,14 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    /** @return the athlete's email, as resolved at handshake time by {@link WebSocketAuthInterceptor} */
+    /** @return el email del atleta, tal como se resolvió en el momento del handshake por {@link WebSocketAuthInterceptor} */
     private String emailOf(WebSocketSession session) {
         return (String) session.getAttributes().get("email");
     }
 
     /**
-     * @return the room code extracted from the session's {@code /ws/room/{code}} URL path
-     * @throws IllegalStateException if the path doesn't match the expected pattern
+     * @return el código de sala extraído de la ruta URL {@code /ws/room/{code}} de la sesión
+     * @throws IllegalStateException si la ruta no coincide con el patrón esperado
      */
     private String roomCodeOf(WebSocketSession session) {
         Matcher matcher = ROOM_CODE_PATTERN.matcher(session.getUri().getPath());

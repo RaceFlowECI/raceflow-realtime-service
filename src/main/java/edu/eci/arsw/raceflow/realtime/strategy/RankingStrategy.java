@@ -13,8 +13,8 @@ import java.util.List;
  */
 public interface RankingStrategy {
     /**
-     * @param athletes the room's current athletes
-     * @return the athletes ordered into a ranking, best-first
+     * @param athletes los atletas actuales de la sala
+     * @return los atletas ordenados en un ranking, de mejor a peor
      */
     List<RankingEntry> rank(Collection<AthleteState> athletes);
 }

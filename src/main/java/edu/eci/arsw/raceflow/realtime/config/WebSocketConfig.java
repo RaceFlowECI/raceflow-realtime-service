@@ -7,7 +7,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-/** Registers the room WebSocket endpoint and its authentication interceptor. */
+/** Registra el endpoint de WebSocket de la sala y su interceptor de autenticación. */
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
@@ -16,8 +16,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
     /**
-     * @param roomWebSocketHandler      handles messages for each room connection
-     * @param webSocketAuthInterceptor  validates the JWT at the handshake
+     * @param roomWebSocketHandler      maneja los mensajes de cada conexión de sala
+     * @param webSocketAuthInterceptor  valida el JWT en el handshake
      */
     public WebSocketConfig(RoomWebSocketHandler roomWebSocketHandler,
                             WebSocketAuthInterceptor webSocketAuthInterceptor) {
@@ -26,7 +26,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
 
     /**
-     * @param registry Spring's WebSocket handler registry
+     * @param registry el registro de manejadores WebSocket de Spring
      */
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/** In-memory state of one athlete within a room: position, distance, and connection status. */
+/** Estado en memoria de un atleta dentro de una sala: posición, distancia y estado de conexión. */
 @Data
 @Builder
 @NoArgsConstructor

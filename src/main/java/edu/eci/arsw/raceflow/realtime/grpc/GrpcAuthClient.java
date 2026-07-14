@@ -18,9 +18,9 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Client for auth-service's internal UserProfileService. Lets realtime-service resolve the
- * authoritative athlete name/sport instead of trusting whatever the frontend sends in the
- * create/join room request body.
+ * Cliente del UserProfileService interno de auth-service. Permite que realtime-service resuelva
+ * el nombre/deporte autoritativo del atleta en vez de confiar en lo que el frontend envía en el
+ * cuerpo de la petición de crear/unirse a sala.
  */
 @Component
 public class GrpcAuthClient {
@@ -32,8 +32,8 @@ public class GrpcAuthClient {
     private final UserProfileServiceGrpc.UserProfileServiceBlockingStub stub;
 
     /**
-     * @param host auth-service's gRPC host (default {@code localhost})
-     * @param port auth-service's gRPC port (default {@code 9090})
+     * @param host el host gRPC de auth-service (por defecto {@code localhost})
+     * @param port el puerto gRPC de auth-service (por defecto {@code 9090})
      */
     @Autowired
     public GrpcAuthClient(@Value("${auth.grpc.host:localhost}") String host,
@@ -45,8 +45,8 @@ public class GrpcAuthClient {
     }
 
     /**
-     * Test-only constructor: lets tests inject an in-process channel instead of opening a
-     * real socket.
+     * Constructor solo para pruebas: permite que los tests inyecten un canal in-process en vez de
+     * abrir un socket real.
      */
     GrpcAuthClient(Channel channel) {
         this.ownedChannel = null;
@@ -54,12 +54,12 @@ public class GrpcAuthClient {
     }
 
     /**
-     * Looks up an athlete's authoritative profile by email, with a 2-second
-     * deadline. Failures (auth-service down, timeout, etc.) are swallowed
-     * and logged, returning empty so the caller can fall back gracefully.
+     * Busca el perfil autoritativo de un atleta por email, con un límite de
+     * 2 segundos. Los fallos (auth-service caído, timeout, etc.) se capturan
+     * y se registran, devolviendo vacío para que quien llama pueda usar un valor de respaldo.
      *
-     * @param email the athlete's email
-     * @return the profile, if auth-service found one within the deadline
+     * @param email el email del atleta
+     * @return el perfil, si auth-service encontró uno dentro del límite de tiempo
      */
     public Optional<ProfileResponse> lookupProfile(String email) {
         try {
@@ -73,7 +73,7 @@ public class GrpcAuthClient {
         }
     }
 
-    /** Gracefully shuts down the owned gRPC channel, if any, on bean destruction. */
+    /** Cierra ordenadamente el canal gRPC propio, si existe, al destruirse el bean. */
     @PreDestroy
     public void shutdown() {
         if (ownedChannel != null) {

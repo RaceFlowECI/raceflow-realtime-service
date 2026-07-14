@@ -10,9 +10,9 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Verifies JWTs issued by auth-service. Used both by the WebSocket handshake
- * interceptor and the REST controllers to authenticate requests, since
- * realtime-service trusts auth-service's tokens rather than issuing its own.
+ * Verifica los JWT emitidos por auth-service. Lo usan tanto el interceptor de
+ * handshake de WebSocket como los controladores REST para autenticar peticiones, ya que
+ * realtime-service confía en los tokens de auth-service en vez de emitir los propios.
  */
 @Service
 public class JwtService {
@@ -20,15 +20,15 @@ public class JwtService {
     private final SecretKey key;
 
     /**
-     * @param secret the shared HMAC signing secret, same value configured in auth-service
+     * @param secret el secreto HMAC compartido para firmar, el mismo valor configurado en auth-service
      */
     public JwtService(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
-     * @param token a valid JWT
-     * @return the email stored in the token's subject claim
+     * @param token un JWT válido
+     * @return el email almacenado en el claim subject del token
      */
     public String extractEmail(String token) {
         return Jwts.parser()
@@ -40,8 +40,8 @@ public class JwtService {
     }
 
     /**
-     * @param token the JWT to validate
-     * @return true if the token's signature and expiration are valid
+     * @param token el JWT a validar
+     * @return true si la firma y la expiración del token son válidas
      */
     public boolean isTokenValid(String token) {
         try {

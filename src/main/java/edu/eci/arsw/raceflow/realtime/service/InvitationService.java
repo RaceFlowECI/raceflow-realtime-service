@@ -11,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Room invitations, kept in memory on purpose: an invitation is exactly as
- * ephemeral as the room it points to (both die with the process). Persistent
- * relationships (friendships) live in auth-service instead.
+ * Invitaciones a salas, mantenidas en memoria a propósito: una invitación es exactamente
+ * tan efímera como la sala a la que apunta (ambas mueren con el proceso). Las relaciones
+ * persistentes (amistades) viven en auth-service.
  */
 @Service
 public class InvitationService {
@@ -30,13 +30,13 @@ public class InvitationService {
     }
 
     /**
-     * Invites an athlete to a room. Silently ignored if the invitee already has a
-     * pending invitation for this room.
+     * Invita a un atleta a una sala. Se ignora silenciosamente si la persona invitada ya tiene una
+     * invitación pendiente para esta sala.
      *
-     * @param roomCode  the room to invite to
-     * @param fromEmail the inviter's email
-     * @param fromName  the inviter's display name
-     * @param toEmail   the invitee's email
+     * @param roomCode  la sala a la que se invita
+     * @param fromEmail el email de quien invita
+     * @param fromName  el nombre visible de quien invita
+     * @param toEmail   el email de la persona invitada
      */
     public void invite(String roomCode, String fromEmail, String fromName, String toEmail) {
         RoomState room = roomManager.getRoom(roomCode); // valida que la sala exista
@@ -67,8 +67,8 @@ public class InvitationService {
     /**
      * Removes a pending invitation, e.g. after the invitee accepts or declines it.
      *
-     * @param email    the invitee's email
-     * @param roomCode the room to discard the invitation for
+     * @param email    el email de la persona invitada
+     * @param roomCode la sala para la cual descartar la invitación
      */
     public void discard(String email, String roomCode) {
         byInvitee.getOrDefault(email.toLowerCase(), List.of())

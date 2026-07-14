@@ -30,10 +30,10 @@ public class RankingService {
     private final ObjectMapper objectMapper;
 
     /**
-     * @param rankingStrategy the algorithm used to order athletes (distance-based by default)
-     * @param metrics         used to time ranking computation and Redis writes
-     * @param redisTemplate   used to cache the computed ranking
-     * @param objectMapper    used to serialize the ranking to JSON before caching
+     * @param rankingStrategy el algoritmo usado para ordenar a los atletas (basado en distancia por defecto)
+     * @param metrics         usado para medir la duración del cálculo de ranking y las escrituras en Redis
+     * @param redisTemplate   usado para cachear el ranking calculado
+     * @param objectMapper    usado para serializar el ranking a JSON antes de cachearlo
      */
     public RankingService(RankingStrategy rankingStrategy,
                            RealtimeMetrics metrics,
@@ -49,8 +49,8 @@ public class RankingService {
      * Ranks a room's current athletes and stores the result in Redis, timed
      * against the ranking-update-duration SLO.
      *
-     * @param room the room to rank
-     * @return the computed ranking, ordered best-first
+     * @param room la sala a ordenar
+     * @return el ranking calculado, ordenado de mejor a peor
      */
     public List<RankingEntry> computeAndStore(RoomState room) {
         return metrics.getRankingUpdateDuration().record(() -> {
@@ -60,7 +60,7 @@ public class RankingService {
         });
     }
 
-    /** Best-effort cache write; a Redis failure is logged and swallowed, not propagated. */
+    /** Escritura de caché best-effort; un fallo de Redis se registra y se captura, no se propaga. */
     private void storeInRedis(String roomCode, List<RankingEntry> ranking) {
         long start = System.nanoTime();
         try {
@@ -77,7 +77,7 @@ public class RankingService {
      * Great-circle distance between two GPS points using the haversine formula.
      * Used to accumulate an athlete's total distance as new positions arrive.
      *
-     * @return the distance in kilometers
+     * @return la distancia en kilómetros
      */
     public double haversineKm(double lat1, double lon1, double lat2, double lon2) {
         double r = 6371.0;

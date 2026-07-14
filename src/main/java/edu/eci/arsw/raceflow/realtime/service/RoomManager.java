@@ -13,9 +13,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Owns the in-memory lifecycle of all active rooms: creation, joining, and
- * tracking each athlete's live WebSocket session. Rooms only exist in this
- * process's memory, so realtime-service must run as a single instance.
+ * Es dueño del ciclo de vida en memoria de todas las salas activas: creación, unión, y
+ * seguimiento de la sesión WebSocket en vivo de cada atleta. Las salas solo existen en la
+ * memoria de este proceso, por eso realtime-service debe ejecutarse como una sola instancia.
  */
 @Service
 public class RoomManager {
@@ -26,20 +26,20 @@ public class RoomManager {
     private final GrpcAuthClient grpcAuthClient;
 
     /**
-     * @param grpcAuthClient used to resolve each athlete's authoritative name from auth-service
+     * @param grpcAuthClient usado para resolver el nombre autoritativo de cada atleta desde auth-service
      */
     public RoomManager(GrpcAuthClient grpcAuthClient) {
         this.grpcAuthClient = grpcAuthClient;
     }
 
     /**
-     * Creates a new room with a freshly generated 6-character code and adds the
-     * creator as its first athlete.
+     * Crea una nueva sala con un código de 6 caracteres recién generado y añade al
+     * creador como su primer atleta.
      *
-     * @param creatorEmail the creator's email
-     * @param creatorName  the client-supplied name, used only as a fallback if
-     *                     the gRPC name lookup fails
-     * @return the new room's code
+     * @param creatorEmail el email del creador
+     * @param creatorName  el nombre suministrado por el cliente, usado solo como respaldo si
+     *                     la búsqueda del nombre por gRPC falla
+     * @return el código de la nueva sala
      */
     public String createRoom(String creatorEmail, String creatorName) {
         String roomCode = generateRoomCode();
@@ -58,13 +58,13 @@ public class RoomManager {
     }
 
     /**
-     * Adds an athlete to an existing room if not already present.
+     * Añade un atleta a una sala existente si aún no está presente.
      *
-     * @param roomCode the room to join
-     * @param email    the joining athlete's email
-     * @param name     the client-supplied name, used only as a fallback
-     * @return the joined room's state
-     * @throws edu.eci.arsw.raceflow.realtime.exception.RoomNotFoundException if the room doesn't exist
+     * @param roomCode la sala a la que se une
+     * @param email    el email del atleta que se une
+     * @param name     el nombre suministrado por el cliente, usado solo como respaldo
+     * @return el estado de la sala a la que se unió
+     * @throws edu.eci.arsw.raceflow.realtime.exception.RoomNotFoundException si la sala no existe
      */
     public RoomState joinRoom(String roomCode, String email, String name) {
         RoomState room = getRoom(roomCode);
@@ -81,10 +81,10 @@ public class RoomManager {
     }
 
     /**
-     * Resolves the athlete's real name via gRPC against auth-service's UserProfileService,
-     * instead of trusting whatever the frontend put in the request body. Falls back to the
-     * client-supplied name if auth-service is unreachable or has no record for this email,
-     * so a transient outage there doesn't block room creation.
+     * Resuelve el nombre real del atleta vía gRPC contra el UserProfileService de auth-service,
+     * en vez de confiar en lo que el frontend puso en el cuerpo de la petición. Usa como respaldo
+     * el nombre suministrado por el cliente si auth-service no está disponible o no tiene registro
+     * para este email, para que una caída transitoria no bloquee la creación de la sala.
      */
     private String resolveAuthoritativeName(String email, String clientSuppliedName) {
         return grpcAuthClient.lookupProfile(email)
@@ -97,9 +97,9 @@ public class RoomManager {
     }
 
     /**
-     * @param roomCode the room to fetch
-     * @return the room's current state
-     * @throws RoomNotFoundException if no room exists with this code
+     * @param roomCode la sala a obtener
+     * @return el estado actual de la sala
+     * @throws RoomNotFoundException si no existe ninguna sala con este código
      */
     public RoomState getRoom(String roomCode) {
         RoomState room = rooms.get(roomCode);
@@ -110,8 +110,8 @@ public class RoomManager {
     }
 
     /**
-     * Associates an athlete's live WebSocket session with their room and marks
-     * them connected, called when a WebSocket connection is established.
+     * Asocia la sesión WebSocket en vivo de un atleta con su sala y lo marca
+     * como conectado, se llama cuando se establece una conexión WebSocket.
      */
     public void registerSession(String roomCode, String email, WebSocketSession session) {
         RoomState room = getRoom(roomCode);
@@ -122,7 +122,7 @@ public class RoomManager {
         }
     }
 
-    /** Removes an athlete's WebSocket session and marks them disconnected, called on close. */
+    /** Elimina la sesión WebSocket de un atleta y lo marca como desconectado, se llama al cerrarse. */
     public void unregisterSession(String roomCode, String email) {
         RoomState room = getRoom(roomCode);
         room.getSessions().remove(email);
@@ -132,7 +132,7 @@ public class RoomManager {
         }
     }
 
-    /** @return a random 6-character uppercase room code */
+    /** @return un código de sala aleatorio de 6 caracteres en mayúsculas */
     private String generateRoomCode() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
     }

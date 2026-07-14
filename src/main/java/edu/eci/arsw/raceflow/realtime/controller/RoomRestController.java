@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** REST endpoints for the room lifecycle: create, join, and query state. */
+/** Endpoints REST para el ciclo de vida de la sala: crear, unirse, y consultar estado. */
 @RestController
 @RequestMapping("/rooms")
 public class RoomRestController {
@@ -21,8 +21,8 @@ public class RoomRestController {
     private final JwtService jwtService;
 
     /**
-     * @param roomManager in-memory store of active rooms
-     * @param jwtService  extracts the caller's email from the bearer token
+     * @param roomManager almacén en memoria de salas activas
+     * @param jwtService  extrae el email de quien llama desde el token bearer
      */
     public RoomRestController(RoomManager roomManager, JwtService jwtService) {
         this.roomManager = roomManager;
@@ -30,11 +30,11 @@ public class RoomRestController {
     }
 
     /**
-     * Creates a new room with the caller as its first athlete.
+     * Crea una nueva sala con quien llama como su primer atleta.
      *
-     * @param authorization bearer token of the creator
-     * @param body          must contain a client-supplied {@code name} (subject to gRPC override)
-     * @return {@code 201 Created} with the generated room code
+     * @param authorization token bearer del creador
+     * @param body          debe contener un {@code name} suministrado por el cliente (sujeto a override por gRPC)
+     * @return {@code 201 Created} con el código de sala generado
      */
     @PostMapping("/create")
     public ResponseEntity<CreateRoomResponse> create(
@@ -51,11 +51,11 @@ public class RoomRestController {
     }
 
     /**
-     * Joins an existing room.
+     * Se une a una sala existente.
      *
-     * @param authorization bearer token of the joining athlete
-     * @param body          must contain {@code roomCode} and a client-supplied {@code name}
-     * @return {@code 200 OK} with the room code and current athlete count
+     * @param authorization token bearer del atleta que se une
+     * @param body          debe contener {@code roomCode} y un {@code name} suministrado por el cliente
+     * @return {@code 200 OK} con el código de sala y el conteo actual de atletas
      */
     @PostMapping("/join")
     public ResponseEntity<JoinRoomResponse> join(
@@ -75,11 +75,11 @@ public class RoomRestController {
     }
 
     /**
-     * Returns the current state of a room (its athletes and their positions).
+     * Devuelve el estado actual de una sala (sus atletas y sus posiciones).
      *
-     * @param authorization bearer token of the caller (must be valid, but any authenticated user may read state)
-     * @param roomCode      the room to query
-     * @return the room code and the current list of athletes
+     * @param authorization token bearer de quien llama (debe ser válido, pero cualquier usuario autenticado puede leer el estado)
+     * @param roomCode      la sala a consultar
+     * @return el código de sala y la lista actual de atletas
      */
     @GetMapping("/{roomCode}/state")
     public ResponseEntity<Map<String, Object>> state(
@@ -97,8 +97,8 @@ public class RoomRestController {
     }
 
     /**
-     * @param authorization the raw {@code Authorization} header value
-     * @return the caller's email, extracted from the bearer JWT
+     * @param authorization el valor crudo del header {@code Authorization}
+     * @return el email de quien llama, extraído del JWT bearer
      */
     private String emailFromHeader(String authorization) {
         String token = authorization.startsWith("Bearer ") ? authorization.substring(7) : authorization;
