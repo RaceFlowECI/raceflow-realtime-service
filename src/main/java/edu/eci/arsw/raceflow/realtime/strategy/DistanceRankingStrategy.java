@@ -9,6 +9,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Default {@link RankingStrategy}: connected athletes first, then ordered by
+ * total distance covered (descending), with the most-recently-updated athlete
+ * winning ties.
+ */
 @Component
 public class DistanceRankingStrategy implements RankingStrategy {
 

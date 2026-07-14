@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** One row of a room's computed ranking, as broadcast to clients. */
 @Data
 @Builder
 @NoArgsConstructor

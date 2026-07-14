@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** Response returned after successfully joining a room. */
 @Data
 @Builder
 @NoArgsConstructor

@@ -21,10 +21,23 @@ public class InvitationService {
     private final Map<String, List<RoomInvitation>> byInvitee = new ConcurrentHashMap<>();
     private final RoomManager roomManager;
 
+    /**
+     * @param roomManager used to validate that a room exists before inviting, and to
+     *                    detect rooms that have since died (orphaned invitations)
+     */
     public InvitationService(RoomManager roomManager) {
         this.roomManager = roomManager;
     }
 
+    /**
+     * Invites an athlete to a room. Silently ignored if the invitee already has a
+     * pending invitation for this room.
+     *
+     * @param roomCode  the room to invite to
+     * @param fromEmail the inviter's email
+     * @param fromName  the inviter's display name
+     * @param toEmail   the invitee's email
+     */
     public void invite(String roomCode, String fromEmail, String fromName, String toEmail) {
         RoomState room = roomManager.getRoom(roomCode); // valida que la sala exista
         List<RoomInvitation> list = byInvitee.computeIfAbsent(
@@ -51,6 +64,12 @@ public class InvitationService {
         return alive;
     }
 
+    /**
+     * Removes a pending invitation, e.g. after the invitee accepts or declines it.
+     *
+     * @param email    the invitee's email
+     * @param roomCode the room to discard the invitation for
+     */
     public void discard(String email, String roomCode) {
         byInvitee.getOrDefault(email.toLowerCase(), List.of())
                 .removeIf(i -> i.getRoomCode().equals(roomCode));
