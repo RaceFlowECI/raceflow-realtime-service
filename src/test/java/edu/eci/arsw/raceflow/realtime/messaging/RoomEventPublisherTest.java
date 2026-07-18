@@ -7,6 +7,7 @@ import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -39,7 +40,8 @@ class RoomEventPublisherTest {
                 .when(rabbitTemplate).convertAndSend(any(String.class), any(String.class), any(Object.class));
         RoomEventPublisher publisher = new RoomEventPublisher(rabbitTemplate);
 
-        publisher.publishRoomActivated("ABC123", "juan@raceflow.dev");
-        // no exception thrown -- best-effort publish, room creation must not be blocked by a broker outage
+        // best-effort publish -- a broker outage must not block room creation
+        assertThatCode(() -> publisher.publishRoomActivated("ABC123", "juan@raceflow.dev"))
+                .doesNotThrowAnyException();
     }
 }
