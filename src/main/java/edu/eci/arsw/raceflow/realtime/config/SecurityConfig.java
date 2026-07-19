@@ -12,10 +12,22 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Spring Security configuration: stateless, CORS for the allowed frontend
+ * origins, and public routes for REST, WebSocket, invitations, health, and
+ * the incident-simulation endpoint (JWT validation for WS happens at the
+ * handshake via {@link edu.eci.arsw.raceflow.realtime.websocket.WebSocketAuthInterceptor},
+ * not through this filter chain).
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * @param http the security builder provided by Spring
+     * @return the configured filter chain
+     * @throws Exception if the security configuration cannot be built
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -27,17 +39,23 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/ws/**", "/rooms/**", "/actuator/**", "/api/simulate/**").permitAll()
+                        .requestMatchers("/ws/**", "/rooms/**", "/invitations/**", "/actuator/**", "/api/simulate/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
         return http.build();
     }
 
+    /**
+     * @return the CORS configuration source allowlisting local dev and the
+     *         production frontend on Azure Static Web Apps
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://lively-rock-0066b1e0f.7.azurestaticapps.net"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 

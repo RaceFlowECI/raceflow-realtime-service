@@ -31,6 +31,10 @@ public class GrpcAuthClient {
     private final ManagedChannel ownedChannel;
     private final UserProfileServiceGrpc.UserProfileServiceBlockingStub stub;
 
+    /**
+     * @param host auth-service's gRPC host (default {@code localhost})
+     * @param port auth-service's gRPC port (default {@code 9090})
+     */
     @Autowired
     public GrpcAuthClient(@Value("${auth.grpc.host:localhost}") String host,
                            @Value("${auth.grpc.port:9090}") int port) {
@@ -49,6 +53,14 @@ public class GrpcAuthClient {
         this.stub = UserProfileServiceGrpc.newBlockingStub(channel);
     }
 
+    /**
+     * Looks up an athlete's authoritative profile by email, with a 2-second
+     * deadline. Failures (auth-service down, timeout, etc.) are swallowed
+     * and logged, returning empty so the caller can fall back gracefully.
+     *
+     * @param email the athlete's email
+     * @return the profile, if auth-service found one within the deadline
+     */
     public Optional<ProfileResponse> lookupProfile(String email) {
         try {
             ProfileResponse response = stub
@@ -61,6 +73,7 @@ public class GrpcAuthClient {
         }
     }
 
+    /** Gracefully shuts down the owned gRPC channel, if any, on bean destruction. */
     @PreDestroy
     public void shutdown() {
         if (ownedChannel != null) {

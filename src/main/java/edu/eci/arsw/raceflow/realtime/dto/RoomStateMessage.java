@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/** Outbound WebSocket message broadcasting the current ranking of a room. */
 @Data
 @Builder
 @NoArgsConstructor
