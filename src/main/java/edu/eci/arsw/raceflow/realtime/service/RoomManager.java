@@ -2,6 +2,7 @@ package edu.eci.arsw.raceflow.realtime.service;
 
 import edu.eci.arsw.raceflow.realtime.exception.RoomNotFoundException;
 import edu.eci.arsw.raceflow.realtime.grpc.GrpcAuthClient;
+import edu.eci.arsw.raceflow.realtime.messaging.RoomEventPublisher;
 import edu.eci.arsw.raceflow.realtime.model.AthleteState;
 import edu.eci.arsw.raceflow.realtime.model.RoomState;
 import org.slf4j.Logger;
@@ -24,12 +25,15 @@ public class RoomManager {
 
     private final ConcurrentHashMap<String, RoomState> rooms = new ConcurrentHashMap<>();
     private final GrpcAuthClient grpcAuthClient;
+    private final RoomEventPublisher eventPublisher;
 
     /**
      * @param grpcAuthClient used to resolve each athlete's authoritative name from auth-service
+     * @param eventPublisher publishes a {@code room.activated} event when a room is created
      */
-    public RoomManager(GrpcAuthClient grpcAuthClient) {
+    public RoomManager(GrpcAuthClient grpcAuthClient, RoomEventPublisher eventPublisher) {
         this.grpcAuthClient = grpcAuthClient;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -54,6 +58,7 @@ public class RoomManager {
                 .connected(false)
                 .build());
         rooms.put(roomCode, room);
+        eventPublisher.publishRoomActivated(roomCode, creatorEmail);
         return roomCode;
     }
 

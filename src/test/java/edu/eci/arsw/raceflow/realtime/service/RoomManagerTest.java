@@ -3,9 +3,11 @@ package edu.eci.arsw.raceflow.realtime.service;
 import edu.eci.arsw.raceflow.auth.grpc.ProfileResponse;
 import edu.eci.arsw.raceflow.realtime.exception.RoomNotFoundException;
 import edu.eci.arsw.raceflow.realtime.grpc.GrpcAuthClient;
+import edu.eci.arsw.raceflow.realtime.messaging.RoomEventPublisher;
 import edu.eci.arsw.raceflow.realtime.model.RoomState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.socket.WebSocketSession;
@@ -15,6 +17,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class RoomManagerTest {
@@ -22,6 +25,10 @@ class RoomManagerTest {
     @Mock
     private GrpcAuthClient grpcAuthClient;
 
+    @Mock
+    private RoomEventPublisher eventPublisher;
+
+    @InjectMocks
     private RoomManager roomManager;
 
     @BeforeEach
@@ -30,7 +37,6 @@ class RoomManagerTest {
         // Default: gRPC has no record for anyone, so tests exercise the client-supplied-name fallback
         // unless a specific test stubs a profile.
         when(grpcAuthClient.lookupProfile(org.mockito.ArgumentMatchers.anyString())).thenReturn(Optional.empty());
-        roomManager = new RoomManager(grpcAuthClient);
     }
 
     @Test
@@ -45,6 +51,13 @@ class RoomManagerTest {
         assertThat(room.getAthletes()).containsKey("juan@raceflow.dev");
         assertThat(room.getAthletes().get("juan@raceflow.dev").getName()).isEqualTo("Juan");
         assertThat(room.getAthletes().get("juan@raceflow.dev").isConnected()).isFalse();
+    }
+
+    @Test
+    void createRoomPublishesRoomActivatedEvent() {
+        String roomCode = roomManager.createRoom("juan@raceflow.dev", "Juan");
+
+        verify(eventPublisher).publishRoomActivated(roomCode, "juan@raceflow.dev");
     }
 
     @Test
